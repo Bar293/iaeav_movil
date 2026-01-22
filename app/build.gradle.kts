@@ -77,6 +77,13 @@ dependencies {
     implementation(libs.play.services.auth)
     implementation(libs.androidx.compose.material3)
 
+    // --- SystemUIController para personalizar status bar y navigation bar ---
+    implementation("com.google.accompanist:accompanist-systemuicontroller:0.30.1")
+
+    // --- Media3 / ExoPlayer para reproducción de audio ---
+    implementation("androidx.media3:media3-exoplayer:1.9.0")
+    implementation("androidx.media3:media3-common:1.9.0")
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
