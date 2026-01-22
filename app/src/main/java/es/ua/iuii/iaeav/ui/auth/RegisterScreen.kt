@@ -89,7 +89,7 @@ fun RegisterScreen(contentPadding: PaddingValues, onRegistered: () -> Unit) {
             /** Campo de texto para introducir el nombre de usuario. */
             OutlinedTextField(
                 value = username,
-                onValueChange = { username = it },
+                onValueChange = { username = it.trimEnd() },
                 label = { Text("Usuario") },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(), // Ocupa todo el ancho
@@ -103,7 +103,7 @@ fun RegisterScreen(contentPadding: PaddingValues, onRegistered: () -> Unit) {
             /** Campo de texto para introducir la dirección de correo electrónico. */
             OutlinedTextField(
                 value = email,
-                onValueChange = { email = it },
+                onValueChange = { email = it.trimEnd() },
                 label = { Text("Correo Electrónico") },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),

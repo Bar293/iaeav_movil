@@ -126,7 +126,7 @@ fun LoginScreen(contentPadding: PaddingValues, onLogged: () -> Unit, onGoRegiste
         // --- Login con Usuario/Contraseña ---
         OutlinedTextField(
             value = loginIdentifier,
-            onValueChange = { loginIdentifier = it },
+            onValueChange = { loginIdentifier = it.trimEnd() },
             label = { Text("Usuario") },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
