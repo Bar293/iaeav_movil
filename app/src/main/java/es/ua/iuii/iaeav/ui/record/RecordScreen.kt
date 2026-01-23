@@ -119,7 +119,7 @@ fun RecordScreen(
             description = "Ahora va a ver seis objetos, diga el nombre de cada uno. Luego, tendrá que recordar los objetos cuando se lo pregunte.",
             durationMs = 30000,
             questionAudioResId = R.raw.pregunta3,
-            drawableResId = R.drawable.prueba_objetos
+            drawableResId = R.drawable.pruebas_objetos
         ),
         TestItem(
             title = "Feedback 3",
