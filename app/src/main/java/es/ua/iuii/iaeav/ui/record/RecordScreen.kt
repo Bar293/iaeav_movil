@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Mic
-import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -35,11 +34,14 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import kotlinx.coroutines.delay
 import androidx.compose.foundation.Image
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import es.ua.iuii.iaeav.R
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.common.MediaItem
+import androidx.compose.foundation.layout.Row
+import androidx.compose.material.icons.filled.SkipNext
 
 /**
  * # Pantalla de Grabación (RecordScreen)
@@ -70,11 +72,23 @@ fun RecordScreen(
     /** Estado local que refleja si el grabador está actualmente activo. */
     var isRecording by remember { mutableStateOf(false) }
 
+    /** Estado local de audio de pregunta en reproducción. */
+    var audioPlaying by remember { mutableStateOf(false) }
+
     /** Estado reactivo del [WorkInfo] para la tarea de subida, observado desde el ViewModel. */
     val workInfo by vm.workInfo.collectAsState()
 
     /** Estado local para controlar la visibilidad del menú desplegable (tres puntos). */
     var showMenu by remember { mutableStateOf(false) }
+
+    /** Estado para controlar la visibilidad del diálogo de cancelación. */
+    var showCancelDialog by remember { mutableStateOf(false) }
+
+    /** Estado para controlar la visibilidad del diálogo de siguiente pregunta. */
+    var showNextQuestionDialog by remember { mutableStateOf(false) }
+
+    /** Estado para detener el tiempo y el audio durante el AlertDialog. */
+    var isStoppingTimeAndAudio by remember { mutableStateOf(false) }
 
     // --- Estados para las Pruebas ---
     var currentTest by remember { mutableStateOf<TestItem?>(null) }
@@ -200,7 +214,7 @@ fun RecordScreen(
 
     // Lógica para avanzar entre pruebas con temporizador
     LaunchedEffect(testIndex, isRecording) {
-        if (!isRecording || testIndex >= testList.size) return@LaunchedEffect
+        if (!isRecording || testIndex >= testList.size ) return@LaunchedEffect
 
         val test = testList[testIndex]
 
@@ -209,6 +223,7 @@ fun RecordScreen(
             isShowingQuestion = true
             currentTest = test
             vm.pauseRecording()
+            audioPlaying = true
 
             exoPlayer.stop()
             exoPlayer.clearMediaItems()
@@ -218,15 +233,13 @@ fun RecordScreen(
             )
             exoPlayer.setMediaItem(mediaItem)
             exoPlayer.prepare()
-            
+
             // Esperar a que el reproductor esté listo
             while (!exoPlayer.isCommandAvailable(ExoPlayer.COMMAND_PLAY_PAUSE)) {
                 delay(100)
             }
-            
+
             exoPlayer.play()
-            
-            // Esperar más tiempo a que comience la reproducción y el audio esté realmente sonando
             delay(1000)
 
             // Esperar a que termine el audio
@@ -236,33 +249,35 @@ fun RecordScreen(
 
             isShowingQuestion = false
             vm.resumeRecording()
+            audioPlaying = false
         } else {
-            // Para feedback o pruebas sin audio, asignar directamente
             currentTest = test
         }
 
-        // Después empieza el tiempo de respuesta
+        // Tiempo de respuesta
         if (!test.isFeedback) {
             val totalSeconds = test.durationMs / 1000
             for (second in totalSeconds downTo 0) {
+                // Esperar si hay un diálogo abierto
+                while (isStoppingTimeAndAudio) {
+                    delay(100)
+                }
                 timeRemaining = second
                 delay(1_000)
             }
         } else {
-            // Para feedback, simplemente esperar el tiempo especificado
             delay(test.durationMs.toLong())
         }
 
-        //Pasar a la siguiente prueba
+        // Pasar a la siguiente prueba
         testIndex++
-        
-        // Si se acabaron todas las pruebas, detener la grabación automáticamente y navegar a la pantalla de carga
+
+        // Si terminaron las pruebas
         if (testIndex >= testList.size) {
             vm.stopAndEnqueueUpload()
             isRecording = false
             currentTest = null
             testIndex = 0
-            
             onNavigateToLoading()
         }
     }
@@ -490,31 +505,52 @@ fun RecordScreen(
                 }
             }
 
-            // Botón Flotante Grande (FAB) de Iniciar/Detener Grabación - Visible durante grabación
+            // Botones en línea - Botón Flotante Grande (FAB) de Cancelar Grabación y Pasar Pregunta - Solo visibles durante grabación
             if (isRecording) {
-                LargeFloatingActionButton(
-                    onClick = {
-                        if (!isRecording) {
-                            testIndex = 0 // Reinicia las pruebas
-                            currentTest = null
-                            startOrAskPermission()
-                        } else {
-                            vm.stopAndEnqueueUpload() // Detiene y pone la subida en cola
-                            isRecording = false
-                            currentTest = null
-                            testIndex = 0
-                        }
-                    },
-                    // Cambia de color basado en el estado de grabación
-                    containerColor = if (isRecording) MaterialTheme.colorScheme.errorContainer
-                    else MaterialTheme.colorScheme.primaryContainer,
-                    modifier = if (isRecording) Modifier.size(90.dp) else Modifier.size(120.dp)
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 16.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
-                        imageVector = if (isRecording) Icons.Filled.Stop else Icons.Filled.Mic,
-                        contentDescription = if (isRecording) "Detener grabación" else "Iniciar grabación",
-                        modifier = if (isRecording) Modifier.size(50.dp) else Modifier.size(80.dp)
-                    )
+                    // Botón de Cancelar
+                    LargeFloatingActionButton(
+                        onClick = {
+                            showCancelDialog = true
+                        },
+                        containerColor = MaterialTheme.colorScheme.errorContainer,
+                        modifier = Modifier.size(80.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Clear,
+                            contentDescription = "Cancelar grabación",
+                            modifier = Modifier.size(40.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(16.dp))
+
+                    // Botón de Pasar pregunta
+                    ExtendedFloatingActionButton(
+                        onClick = {
+                            if (!audioPlaying) { // Verificar que no haya audio sonando
+                                showNextQuestionDialog = true
+                            }
+                        },
+                        //containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                        modifier = Modifier.height(60.dp),
+                    ) {
+                        Text(
+                            text = "Siguiente pregunta",
+                            style = MaterialTheme.typography.headlineSmall
+                        )
+                        Icon(
+                            imageVector = Icons.Filled.SkipNext,
+                            contentDescription = "Pasar pregunta",
+                            modifier = Modifier.size(40.dp),
+                        )
+                    }
                 }
             }
 
@@ -533,6 +569,81 @@ fun RecordScreen(
                 )
             }
         }
+    }
+
+    // Diálogo de confirmación para cancelar
+    if (showCancelDialog) {
+        LaunchedEffect(showCancelDialog) {
+            isStoppingTimeAndAudio = true
+        }
+        AlertDialog(
+            onDismissRequest = {
+                showCancelDialog = false
+                isStoppingTimeAndAudio = false
+            },
+            title = { Text("Cancelar prueba") },
+            text = { Text("Si da a Aceptar la prueba se cancelará y volverá a la pantalla inicial.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showCancelDialog = false
+                        isStoppingTimeAndAudio = false
+                        isRecording = false
+                        currentTest = null
+                        testIndex = 0
+                        exoPlayer.stop()
+                    }
+                ) {
+                    Text("Aceptar")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        showCancelDialog = false
+                        isStoppingTimeAndAudio = false
+                    }
+                ) {
+                    Text("Continuar prueba")
+                }
+            }
+        )
+    }
+
+    // Diálogo de confirmación para siguiente pregunta
+    if (showNextQuestionDialog) {
+        LaunchedEffect(showNextQuestionDialog) {
+            isStoppingTimeAndAudio = true
+        }
+        AlertDialog(
+            onDismissRequest = {
+                showNextQuestionDialog = false
+                isStoppingTimeAndAudio = false
+            },
+            title = { Text("Siguiente pregunta") },
+            text = { Text("Si da a Aceptar pasará a la siguiente pregunta, si no ha terminado de responder pulse Cancelar.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showNextQuestionDialog = false
+                        isStoppingTimeAndAudio = false
+                        testIndex++
+                    }
+                ) {
+                    Text("Aceptar")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        showNextQuestionDialog = false
+                        isStoppingTimeAndAudio = false
+                    }
+                ) {
+                    Text("Cancelar")
+                }
+            }
+        )
     }
 }
 
