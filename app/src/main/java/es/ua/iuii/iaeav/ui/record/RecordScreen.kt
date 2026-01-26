@@ -106,7 +106,7 @@ fun RecordScreen(
         ),
         TestItem(
             title = "Prueba 1: Memoria",
-            description = "Cuénteme, cómo está su memoria.\n ¿Cuáles son las cosas que más le cuesta recordar?",
+            description = "Cuénteme, cómo está su memoria.\n¿Cuáles son las cosas que más le cuesta recordar?",
             durationMs = 30000,
             questionAudioResId = R.raw.pregunta1
         ),
@@ -130,7 +130,7 @@ fun RecordScreen(
         ),
         TestItem(
             title = "Prueba 3: Reconocimiento de Imágenes",
-            description = "Ahora va a ver seis objetos, diga el nombre de cada uno.\n Luego, tendrá que recordar los objetos cuando se lo pregunte.",
+            description = "Ahora va a ver seis objetos, diga el nombre de cada uno.\nLuego, tendrá que recordar los objetos cuando se lo pregunte.",
             durationMs = 30000,
             questionAudioResId = R.raw.pregunta3,
             drawableResId = R.drawable.pruebas_objetos
@@ -167,7 +167,7 @@ fun RecordScreen(
         ),
         TestItem(
             title = "Prueba 6: Memoria de Imágenes",
-            description = "Ahora, ¿recuerda los objetos que anteriormente aparecieron?\n Por favor, menciónelos.",
+            description = "Ahora, ¿recuerda los objetos que anteriormente aparecieron?\nPor favor, menciónelos.",
             durationMs = 60000,
             questionAudioResId = R.raw.pregunta6,
             drawableResId = R.drawable.recordar_objetos
@@ -180,7 +180,7 @@ fun RecordScreen(
         ),
         TestItem(
             title = "Prueba 7: Análisis de Imagen",
-            description = "Por último, mire detalladamente la siguiente imagen. Cuénteme con detalle lo que ve y lo que está ocurriendo.",
+            description = "Por último, mire detalladamente la siguiente imagen.\nCuénteme con detalle lo que ve y lo que está ocurriendo.",
             durationMs = 20000,
             questionAudioResId = R.raw.pregunta7,
             drawableResId = R.drawable.imagen_accidente
@@ -193,8 +193,8 @@ fun RecordScreen(
         ),
         TestItem(
             title = "Fin de la Prueba",
-            description = "Ha finalizado la prueba.\n Gracias por su colaboración.",
-            durationMs = 4000,
+            description = "Ha finalizado la prueba.\nGracias por su colaboración.",
+            durationMs = 5000,
             isFeedback = true
         )
     )
@@ -276,17 +276,20 @@ fun RecordScreen(
         // Si terminaron las pruebas
         if (testIndex >= testList.size) {
             vm.stopAndEnqueueUpload()
+            isRecording = false
         }
     }
 
     // Navegar a la pantalla de carga si la subida fue exitosa o a la de grabación si falló
     LaunchedEffect(workInfo) {
-        // Solo navegar si la subida fue exitosa
+        // Solo cambiar de pantalla si la subida fue exitosa
         if (workInfo?.state == WorkInfo.State.SUCCEEDED) {
             onNavigateToLoading()
+            delay(1000)
+            currentTest = null
+            testIndex = 0
         } else if (workInfo?.state == WorkInfo.State.FAILED) {
             // Reiniciar el estado local si la subida falló
-            isRecording = false
             currentTest = null
             testIndex = 0
         }
@@ -450,7 +453,7 @@ fun RecordScreen(
                         .fillMaxWidth(),
                     contentAlignment = Alignment.Center
                 ) {
-                    if (!isRecording) {
+                    if (!isRecording && testIndex == 0) {
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.Center
