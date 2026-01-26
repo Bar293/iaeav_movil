@@ -275,10 +275,19 @@ fun RecordScreen(
         // Si terminaron las pruebas
         if (testIndex >= testList.size) {
             vm.stopAndEnqueueUpload()
+        }
+    }
+
+    // Navegar a la pantalla de carga si la subida fue exitosa o a la de grabación si falló
+    LaunchedEffect(workInfo) {
+        // Solo navegar si la subida fue exitosa
+        if (workInfo?.state == WorkInfo.State.SUCCEEDED) {
+            onNavigateToLoading()
+        } else if (workInfo?.state == WorkInfo.State.FAILED) {
+            // Reiniciar el estado local si la subida falló
             isRecording = false
             currentTest = null
             testIndex = 0
-            onNavigateToLoading()
         }
     }
 
@@ -592,6 +601,7 @@ fun RecordScreen(
                         currentTest = null
                         testIndex = 0
                         exoPlayer.stop()
+                        vm.cancelRecording()
                     }
                 ) {
                     Text("Aceptar")
