@@ -106,7 +106,7 @@ fun RecordScreen(
         ),
         TestItem(
             title = "Prueba 1: Memoria",
-            description = "Cuénteme, cómo está su memoria. ¿Cuáles son las cosas que más le cuesta recordar?",
+            description = "Cuénteme, cómo está su memoria.\n ¿Cuáles son las cosas que más le cuesta recordar?",
             durationMs = 30000,
             questionAudioResId = R.raw.pregunta1
         ),
@@ -130,7 +130,7 @@ fun RecordScreen(
         ),
         TestItem(
             title = "Prueba 3: Reconocimiento de Imágenes",
-            description = "Ahora va a ver seis objetos, diga el nombre de cada uno. Luego, tendrá que recordar los objetos cuando se lo pregunte.",
+            description = "Ahora va a ver seis objetos, diga el nombre de cada uno.\n Luego, tendrá que recordar los objetos cuando se lo pregunte.",
             durationMs = 30000,
             questionAudioResId = R.raw.pregunta3,
             drawableResId = R.drawable.pruebas_objetos
@@ -167,9 +167,10 @@ fun RecordScreen(
         ),
         TestItem(
             title = "Prueba 6: Memoria de Imágenes",
-            description = "Ahora, ¿recuerda los objetos que anteriormente aparecieron? Por favor, menciónelos.",
+            description = "Ahora, ¿recuerda los objetos que anteriormente aparecieron?\n Por favor, menciónelos.",
             durationMs = 60000,
-            questionAudioResId = R.raw.pregunta6
+            questionAudioResId = R.raw.pregunta6,
+            drawableResId = R.drawable.recordar_objetos
         ),
         TestItem(
             title = "Feedback 6",
@@ -192,7 +193,7 @@ fun RecordScreen(
         ),
         TestItem(
             title = "Fin de la Prueba",
-            description = "Ha finalizado la prueba. Gracias por su colaboración.",
+            description = "Ha finalizado la prueba.\n Gracias por su colaboración.",
             durationMs = 4000,
             isFeedback = true
         )
@@ -496,14 +497,14 @@ fun RecordScreen(
                                 Text(
                                     text = test.description,
                                     style = if (test.isFeedback) MaterialTheme.typography.displayMedium else MaterialTheme.typography.headlineSmall,
-                                    textAlign = TextAlign.Center,
+                                    textAlign = if (test.isFeedback) TextAlign.Center else TextAlign.Justify,
                                     modifier = Modifier.fillMaxWidth()
                                 )
                                 // Imagen asociada a la prueba, si existe
-                                if (test?.drawableResId != null) {
+                                if (test.drawableResId != null) {
                                     Image(
-                                        painter = painterResource(id = test!!.drawableResId!!),
-                                        contentDescription = test!!.title,
+                                        painter = painterResource(id = test.drawableResId),
+                                        contentDescription = test.title,
                                         modifier = Modifier.fillMaxWidth(),
                                         contentScale = ContentScale.Fit
                                     )
