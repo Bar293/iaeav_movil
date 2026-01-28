@@ -61,7 +61,7 @@ fun RecordScreen(
     onLogout: () -> Unit,
     onNavigateToProfile: () -> Unit,
     onNavigateToInfo: () -> Unit,
-    onNavigateToLoading: () -> Unit
+    onNavigateToLoading: (String) -> Unit
 ) {
     val context = LocalContext.current
     // Inicialización del ViewModel que orquesta la grabación y la subida
@@ -89,6 +89,10 @@ fun RecordScreen(
 
     /** Estado para detener el tiempo y el audio durante el AlertDialog. */
     var isStoppingTimeAndAudio by remember { mutableStateOf(false) }
+
+    /** Estado para almacenar el ID de la grabación subida. */
+    var recordingId by remember { mutableStateOf<String?>(null) }
+
 
     // --- Estados para las Pruebas ---
     var currentTest by remember { mutableStateOf<TestItem?>(null) }
@@ -282,19 +286,25 @@ fun RecordScreen(
 
     // Navegar a la pantalla de carga si la subida fue exitosa o a la de grabación si falló
     LaunchedEffect(workInfo) {
-        // Solo cambiar de pantalla si la subida fue exitosa
-        if (workInfo?.state == WorkInfo.State.SUCCEEDED) {
-            onNavigateToLoading()
-            delay(1000)
-            currentTest = null
-            testIndex = 0
-        } else if (workInfo?.state == WorkInfo.State.FAILED) {
-            // Reiniciar el estado local si la subida falló
-            currentTest = null
-            testIndex = 0
+        workInfo?.let { info ->
+            if (info.state == WorkInfo.State.SUCCEEDED) {
+
+                val recordingId =
+                    info.outputData.getString(UploadWorker.KEY_OUTPUT_RECORDING_ID)
+
+                onNavigateToLoading(recordingId ?: "unknown")
+
+                delay(1000)
+                currentTest = null
+                testIndex = 0
+
+            } else if (info.state == WorkInfo.State.FAILED) {
+                currentTest = null
+                testIndex = 0
+                recordingId = null
+            }
         }
     }
-
 
     // --- Lógica de Estado de la UI ---
 
@@ -401,7 +411,7 @@ fun RecordScreen(
                             text = { Text("Ir a Pantalla de Carga") },
                             onClick = {
                                 showMenu = false
-                                onNavigateToLoading() // Navegación directa a carga
+                                onNavigateToLoading("123456789") // Navegación directa a carga
                             }
                         )
                         //

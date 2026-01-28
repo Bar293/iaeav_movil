@@ -23,7 +23,8 @@ import androidx.activity.compose.BackHandler
 @Composable
 fun LoadingScreen(
     isLoading: Boolean = true,
-    onNavigateToResult: () -> Unit = {}
+    onNavigateToResult: (String) -> Unit = {},
+    recordingId: String
 ) {
     // Bloquea el botón atrás mientras esté cargando
     BackHandler(enabled = isLoading) { }
@@ -31,7 +32,7 @@ fun LoadingScreen(
     // Navegación automática cuando termina la carga
     LaunchedEffect(isLoading) {
         if (!isLoading) {
-            onNavigateToResult()
+            onNavigateToResult(recordingId)
         }
     }
 
@@ -70,10 +71,16 @@ fun LoadingScreen(
             )
 
             Spacer(modifier = Modifier.height(32.dp))
+            Text(
+                text = "ID de Grabación: $recordingId",
+                style = MaterialTheme.typography.bodyMedium,
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.primary
+            )
 
             // 
             Button(
-                onClick = onNavigateToResult
+                onClick = { onNavigateToResult(recordingId) }
             ) {
                 Text("Ver resultados")
             }

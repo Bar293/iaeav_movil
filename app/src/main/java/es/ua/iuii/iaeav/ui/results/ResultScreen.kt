@@ -33,7 +33,8 @@ fun ResultScreen(
     onBack: () -> Unit,
     onLogout: () -> Unit = {},
     onNavigateToProfile: () -> Unit = {},
-    onNavigateToInfo: () -> Unit = {}
+    onNavigateToInfo: () -> Unit = {},
+    recordingId: String
 ) {
     var showMenu by remember { mutableStateOf(false) }
     var prediction by remember { mutableStateOf(true) }
@@ -150,6 +151,13 @@ fun ResultScreen(
                 style = MaterialTheme.typography.headlineLarge,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth()
+            )
+
+            Text(
+                text = recordingId,
+                style = MaterialTheme.typography.bodyMedium,
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.primary,
             )
 
             Spacer(modifier = Modifier.height(28.dp))
