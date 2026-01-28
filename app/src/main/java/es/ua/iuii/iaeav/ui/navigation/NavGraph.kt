@@ -142,6 +142,9 @@ fun AppNavHost(nav: NavHostController, contentPadding: PaddingValues) {
                 onNavigateToResult = {
                     nav.navigate(Routes.result(recordingId))
                 },
+                onNavigateToLogin = {
+                    nav.navigate(Routes.Login) { popUpTo(0) }
+                },
             )
         }
 

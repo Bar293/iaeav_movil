@@ -411,7 +411,7 @@ fun RecordScreen(
                             text = { Text("Ir a Pantalla de Carga") },
                             onClick = {
                                 showMenu = false
-                                onNavigateToLoading("123456789") // Navegación directa a carga
+                                onNavigateToLoading("0b7d6d1cb0cb") // ad621c97da0e
                             }
                         )
                         //
