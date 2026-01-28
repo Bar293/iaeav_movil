@@ -63,6 +63,7 @@ class LoadingViewModel(
                 } catch (e: HttpException) {
                     when (e.code()) {
                         401 -> {
+                            // Token inválido o expirado. No debería de ocurrir desde la aplicación móvil puesto que siempre manda autenticación válida
                             _uiState.value = LoadingUiState.Unauthorized
                             return@launch
                         }
