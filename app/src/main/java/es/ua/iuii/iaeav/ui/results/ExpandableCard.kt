@@ -26,6 +26,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 
 @Composable
 fun ExpandableCard(
@@ -33,11 +37,17 @@ fun ExpandableCard(
     expanded: Boolean,
     onToggle: () -> Unit
 ) {
+    var hasOverflow by remember { mutableStateOf(false) }
+    val collapsedMaxLines = 5
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .animateContentSize()
-            .clickable { onToggle() },
+            .then(
+                if (hasOverflow) Modifier.clickable { onToggle() }
+                else Modifier
+            ),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant
         )
@@ -47,59 +57,42 @@ fun ExpandableCard(
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            val contentModifier = if (expanded) {
-                Modifier.fillMaxWidth()
-            } else {
-                Modifier
-                    .fillMaxWidth()
-                    .height(100.dp)
-            }
 
-            Box(modifier = contentModifier) {
-                Text(
-                    text = content,
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+            Text(
+                text = content,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = if (expanded) Int.MAX_VALUE else collapsedMaxLines,
+                onTextLayout = { layoutResult ->
+                    // Mide el overflow solo cuando está colapsado
+                    if (!expanded) {
+                        hasOverflow = layoutResult.hasVisualOverflow
+                    }
+                }
+            )
 
-                if (!expanded) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(40.dp)
-                            .align(Alignment.BottomCenter)
-                            .background(
-                                Brush.verticalGradient(
-                                    colors = listOf(
-                                        Color.Transparent,
-                                        MaterialTheme.colorScheme.surfaceVariant
-                                    )
-                                )
-                            )
+            if (hasOverflow) {
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = if (expanded) "Ver menos" else "Ver más",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Icon(
+                        imageVector = if (expanded)
+                            Icons.Default.KeyboardArrowUp
+                        else
+                            Icons.Default.KeyboardArrowDown,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary
                     )
                 }
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = if (expanded) "Ver menos" else "Ver más",
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                Icon(
-                    imageVector = if (expanded)
-                        Icons.Default.KeyboardArrowUp
-                    else
-                        Icons.Default.KeyboardArrowDown,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary
-                )
             }
         }
     }
