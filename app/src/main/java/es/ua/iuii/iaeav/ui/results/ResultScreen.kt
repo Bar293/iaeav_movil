@@ -196,7 +196,7 @@ fun ResultScreen(
                     )
 
                     ExpandableCard(
-                        content = "El modelo ha analizado patrones acústicos y lingüísticos relevantes.",
+                        content = explicability,
                         expanded = explainabilityExpanded,
                         onToggle = { explainabilityExpanded = !explainabilityExpanded }
                     )

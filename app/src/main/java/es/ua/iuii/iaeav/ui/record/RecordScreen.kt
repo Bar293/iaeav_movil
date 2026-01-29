@@ -42,6 +42,9 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.common.MediaItem
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material.icons.filled.SkipNext
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.ui.draw.alpha
 
 /**
  * # Pantalla de Grabación (RecordScreen)
@@ -81,6 +84,9 @@ fun RecordScreen(
     /** Estado local para controlar la visibilidad del menú desplegable (tres puntos). */
     var showMenu by remember { mutableStateOf(false) }
 
+    /** Estado local para controlar cuando está parado el audio durante la prueba */
+    var isAudioStopped by remember { mutableStateOf(false) }
+
     /** Estado para controlar la visibilidad del diálogo de cancelación. */
     var showCancelDialog by remember { mutableStateOf(false) }
 
@@ -105,7 +111,7 @@ fun RecordScreen(
         TestItem(
             title = "Feedback 0",
             description = "Buenos días",
-            durationMs = 1000,
+            durationMs = 500,
             isFeedback = true
         ),
         TestItem(
@@ -228,6 +234,7 @@ fun RecordScreen(
             isShowingQuestion = true
             currentTest = test
             vm.pauseRecording()
+            isAudioStopped = true
             audioPlaying = true
 
             exoPlayer.stop()
@@ -254,6 +261,7 @@ fun RecordScreen(
 
             isShowingQuestion = false
             vm.resumeRecording()
+            isAudioStopped = false
             audioPlaying = false
         } else {
             currentTest = test
@@ -312,9 +320,10 @@ fun RecordScreen(
      * Variable calculada que proporciona un mensaje descriptivo para el usuario
      * basado en el estado de grabación local y el estado del worker de subida.
      */
-    val status = remember(isRecording, workInfo) {
+    val status = remember(isRecording, workInfo, isAudioStopped) {
         when {
-            isRecording -> "Grabando..."
+            isRecording && !isAudioStopped -> "Grabando..."
+            isRecording && isAudioStopped -> "Grabación pausada"
             workInfo == null -> "Listo para grabar"
             else -> when (workInfo!!.state) {
                 WorkInfo.State.ENQUEUED -> "En cola para subir..."
@@ -332,6 +341,27 @@ fun RecordScreen(
                 }
                 WorkInfo.State.CANCELLED -> "Subida cancelada"
             }
+        }
+    }
+
+    // Animación de parpadeo para el texto "Grabando..."
+    var blinkTarget by remember { mutableStateOf(1f) }
+    val blinkingAlpha by animateFloatAsState(
+        targetValue = blinkTarget,
+        animationSpec = tween(durationMillis = 800),
+        label = "blinking"
+    )
+    
+    LaunchedEffect(status) {
+        if (status == "Grabando...") {
+            while (true) {
+                blinkTarget = 0.3f
+                delay(800)
+                blinkTarget = 1f
+                delay(800)
+            }
+        } else {
+            blinkTarget = 1f
         }
     }
 
@@ -577,7 +607,7 @@ fun RecordScreen(
                 }
             }
 
-            // Tarjeta de Estado (Muestra el status)
+            // Tarjeta de Estado (Muestra el status)               
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -586,7 +616,7 @@ fun RecordScreen(
             ) {
                 Text(
                     text = status,
-                    modifier = Modifier.padding(16.dp),
+                    modifier = Modifier.padding(16.dp).alpha(blinkingAlpha),
                     textAlign = TextAlign.Center,
                     style = MaterialTheme.typography.bodyLarge
                 )
