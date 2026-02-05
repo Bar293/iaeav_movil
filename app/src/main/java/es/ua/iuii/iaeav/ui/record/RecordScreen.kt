@@ -113,6 +113,18 @@ fun RecordScreen(
     var timeRemaining by remember { mutableStateOf(0) }
     var isShowingQuestion by remember { mutableStateOf(false) }
 
+    // Estado para el índice de imagen actual (para pruebas con múltiples imágenes)
+    var currentImageIndex by remember { mutableStateOf(0) }
+    // Lista de drawables para la prueba 3
+    val test3Images = listOf(
+        R.drawable.pruebas_objetos_1,
+        R.drawable.pruebas_objetos_2,
+        R.drawable.pruebas_objetos_3,
+        R.drawable.pruebas_objetos_4,
+        R.drawable.pruebas_objetos_5,
+        R.drawable.pruebas_objetos_6
+    )
+
     // Lista de pruebas con texto, imagen y duración
     val testList = listOf(
         TestItem(
@@ -150,7 +162,7 @@ fun RecordScreen(
             description = "Ahora va a ver seis objetos, diga el nombre de cada uno.\nLuego, tendrá que recordar los objetos cuando se lo pregunte.",
             durationMs = 30000,
             questionAudioResId = R.raw.pregunta3,
-            drawableResId = R.drawable.pruebas_objetos
+            drawableResIds = test3Images
         ),
         TestItem(
             title = "Feedback 3",
@@ -187,7 +199,7 @@ fun RecordScreen(
             description = "Ahora, ¿recuerda los objetos que anteriormente aparecieron?\nPor favor, menciónelos.",
             durationMs = 60000,
             questionAudioResId = R.raw.pregunta6,
-            drawableResId = R.drawable.recordar_objetos
+            drawableResIds = listOf(R.drawable.recordar_objetos)
         ),
         TestItem(
             title = "Feedback 6",
@@ -200,7 +212,7 @@ fun RecordScreen(
             description = "Por último, mire detalladamente la siguiente imagen.\nCuénteme con detalle lo que ve y lo que está ocurriendo.",
             durationMs = 20000,
             questionAudioResId = R.raw.pregunta7,
-            drawableResId = R.drawable.imagen_accidente
+            drawableResIds = listOf(R.drawable.imagen_accidente)
         ),
         TestItem(
             title = "Feedback 7",
@@ -274,16 +286,39 @@ fun RecordScreen(
             currentTest = test
         }
 
+        // Resetear índice de imagen al inicio de cada prueba
+        currentImageIndex = 0
+
         // Tiempo de respuesta
         if (!test.isFeedback) {
             val totalSeconds = test.durationMs / 1000
-            for (second in totalSeconds downTo 0) {
-                // Esperar si hay un diálogo abierto
-                while (isStoppingTimeAndAudio) {
-                    delay(100)
+            
+            // Si hay múltiples imágenes, cambiar cada 5 segundos
+            val images = test.drawableResIds
+            if (images != null && images.size > 1) {
+                val imagesPerSecond = images.size.toFloat() / totalSeconds
+                for (second in totalSeconds downTo 0) {
+                    // Esperar si hay un diálogo abierto
+                    while (isStoppingTimeAndAudio) {
+                        delay(100)
+                    }
+                    timeRemaining = second
+                    
+                    // Calcular índice de imagen basado en el tiempo
+                    val newImageIndex = ((totalSeconds - second) * imagesPerSecond).toInt().coerceIn(0, images.size - 1)
+                    currentImageIndex = newImageIndex
+                    
+                    delay(1_000)
                 }
-                timeRemaining = second
-                delay(1_000)
+            } else {
+                for (second in totalSeconds downTo 0) {
+                    // Esperar si hay un diálogo abierto
+                    while (isStoppingTimeAndAudio) {
+                        delay(100)
+                    }
+                    timeRemaining = second
+                    delay(1_000)
+                }
             }
         } else {
             delay(test.durationMs.toLong())
@@ -591,13 +626,24 @@ fun RecordScreen(
                                     modifier = Modifier.fillMaxWidth()
                                 )
                                 // Imagen asociada a la prueba, si existe
-                                if (test.drawableResId != null) {
-                                    Image(
-                                        painter = painterResource(id = test.drawableResId),
-                                        contentDescription = test.title,
-                                        modifier = Modifier.fillMaxWidth(),
-                                        contentScale = ContentScale.Fit
-                                    )
+                                val images = test.drawableResIds
+                                if (images != null && images.isNotEmpty()) {
+                                    // Usar AnimatedContent para transiciones suaves entre imágenes
+                                    AnimatedContent(
+                                        targetState = currentImageIndex,
+                                        transitionSpec = {
+                                            fadeIn(animationSpec = tween(500)) togetherWith
+                                            fadeOut(animationSpec = tween(500))
+                                        },
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) { imageIndex ->
+                                        Image(
+                                            painter = painterResource(id = images[imageIndex]),
+                                            contentDescription = "${test.title} - Imagen ${imageIndex + 1}",
+                                            modifier = Modifier.fillMaxWidth(),
+                                            contentScale = ContentScale.Fit
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -753,7 +799,7 @@ data class TestItem(
     val title: String,
     val description: String,
     val durationMs: Int, // Tiempo de respuesta
-    val drawableResId: Int? = null,
+    val drawableResIds: List<Int>? = null, // Lista de imágenes (para pruebas con múltiples imágenes)
     val isFeedback: Boolean = false,
     val questionAudioResId: Int? = null
 )
