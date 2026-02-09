@@ -23,6 +23,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.LargeFloatingActionButton
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.foundation.background
 import androidx.work.WorkInfo
 import es.ua.iuii.iaeav.workers.UploadWorker
 import java.util.Locale
@@ -540,6 +541,38 @@ fun RecordScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top
         ) {
+            // Indicador de grabación (punto rojo parpadeante) - encima del timer (no mostrar durante feedback)
+            AnimatedVisibility(
+                visible = isRecording && currentTest != null && !currentTest!!.isFeedback,
+                enter = fadeIn(animationSpec = androidx.compose.animation.core.tween(500)),
+                exit = fadeOut(animationSpec = androidx.compose.animation.core.tween(500)),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Punto rojo parpadeante
+                    Box(
+                        modifier = Modifier
+                            .size(16.dp)
+                            .background(
+                                color = MaterialTheme.colorScheme.error,
+                                shape = androidx.compose.foundation.shape.CircleShape
+                            )
+                            .alpha(blinkingAlpha)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    // Texto "Grabando..." o "Grabación pausada"
+                    Text(
+                        text = if (isAudioStopped) "Grabación pausada" else "Grabando...",
+                        style = MaterialTheme.typography.headlineLarge,
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.alpha(blinkingAlpha)
+                    )
+                }
+            }
+
             // Mostrar tiempo restante arriba si esta grabando, hay pregunta (no feedback) y no se está mostrando la pregunta
             AnimatedVisibility(
                 visible = isRecording && currentTest != null && !currentTest!!.isFeedback && !isShowingQuestion,
@@ -700,19 +733,21 @@ fun RecordScreen(
                 }
             }
 
-            // Tarjeta de Estado (Muestra el status)               
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 16.dp),
-                elevation = CardDefaults.cardElevation(4.dp)
-            ) {
-                Text(
-                    text = status,
-                    modifier = Modifier.padding(16.dp).alpha(blinkingAlpha),
-                    textAlign = TextAlign.Center,
-                    style = MaterialTheme.typography.bodyLarge
-                )
+            // Tarjeta de Estado (Solo muestra estados de subida cuando NO está grabando)
+            if (!isRecording) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 16.dp),
+                    elevation = CardDefaults.cardElevation(4.dp)
+                ) {
+                    Text(
+                        text = status,
+                        modifier = Modifier.padding(16.dp),
+                        textAlign = TextAlign.Center,
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
             }
         }
     }
