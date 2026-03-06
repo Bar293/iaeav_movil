@@ -48,10 +48,12 @@ import androidx.compose.animation.core.tween
 import androidx.compose.ui.draw.alpha
 
 //---------- Debug de subir wav
+/* 
 import android.net.Uri
 import androidx.activity.result.contract.ActivityResultContracts.OpenDocument
 import java.io.File
 import java.io.InputStream
+*/
 //----------
 
 /**
@@ -409,7 +411,7 @@ fun RecordScreen(
     }
 
     // Selector de archivo WAV (modo debug)
-    val pickWavLauncher = rememberLauncherForActivityResult(
+    /*val pickWavLauncher = rememberLauncherForActivityResult(
         contract = OpenDocument()
     ) { uri: Uri? ->
         if (uri != null) {
@@ -432,7 +434,7 @@ fun RecordScreen(
                 e.printStackTrace()
             }
         }
-    }
+    }*/
 
 
     // --- Lógica de Permisos ---
@@ -514,19 +516,19 @@ fun RecordScreen(
                                 onNavigateToLoading("0b7d6d1cb0cb") // ad621c97da0e
                             }
                         )
-                        DropdownMenuItem(
-                            text = { Text("DEBUG: Subir audio WAV") },
-                            onClick = {
-                                showMenu = false
-                                pickWavLauncher.launch(
-                                    arrayOf(
-                                        "audio/wav",
-                                        "audio/x-wav",
-                                        "audio/*"
-                                    )
-                                )
-                            }
-                        )
+                        //DropdownMenuItem(
+                        //    text = { Text("DEBUG: Subir audio WAV") },
+                          //  onClick = {
+                            //    showMenu = false
+                              //  pickWavLauncher.launch(
+                                //    arrayOf(
+                                  //      "audio/wav",
+                                    //    "audio/x-wav",
+                                      //  "audio/*"
+                                 //   )
+                            //    )
+                         //   }
+                      //  )
                         //
                     }
                 }
