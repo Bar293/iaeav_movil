@@ -131,7 +131,7 @@ fun RecordScreen(
         TestItem(
             title = "Feedback 0",
             description = "Buenos días",
-            durationMs = 500,
+            durationMs = 1500,
             isFeedback = true
         ),
         TestItem(
@@ -143,7 +143,7 @@ fun RecordScreen(
         TestItem(
             title = "Feedback 1",
             description = "Muy bien",
-            durationMs = 1000,
+            durationMs = 1500,
             isFeedback = true
         ),
         TestItem(
@@ -155,7 +155,7 @@ fun RecordScreen(
         TestItem(
             title = "Feedback 2",
             description = "Muy bien",
-            durationMs = 1000,
+            durationMs = 1500,
             isFeedback = true
         ),
         TestItem(
@@ -168,7 +168,7 @@ fun RecordScreen(
         TestItem(
             title = "Feedback 3",
             description = "Muy bien",
-            durationMs = 1000,
+            durationMs = 1500,
             isFeedback = true
         ),
         TestItem(
@@ -180,7 +180,7 @@ fun RecordScreen(
         TestItem(
             title = "Feedback 4",
             description = "Muy bien",
-            durationMs = 1000,
+            durationMs = 1500,
             isFeedback = true
         ),
         TestItem(
@@ -192,7 +192,7 @@ fun RecordScreen(
         TestItem(
             title = "Feedback 5",
             description = "Muy bien",
-            durationMs = 1000,
+            durationMs = 1500,
             isFeedback = true
         ),
         TestItem(
@@ -205,7 +205,7 @@ fun RecordScreen(
         TestItem(
             title = "Feedback 6",
             description = "Muy bien",
-            durationMs = 1000,
+            durationMs = 1500,
             isFeedback = true
         ),
         TestItem(
@@ -218,7 +218,7 @@ fun RecordScreen(
         TestItem(
             title = "Feedback 7",
             description = "Muy bien",
-            durationMs = 1000,
+            durationMs = 1500,
             isFeedback = true
         ),
         TestItem(
@@ -673,7 +673,7 @@ fun RecordScreen(
                                         Image(
                                             painter = painterResource(id = images[imageIndex]),
                                             contentDescription = "${test.title} - Imagen ${imageIndex + 1}",
-                                            modifier = Modifier.fillMaxWidth(),
+                                            modifier = Modifier.fillMaxSize(),
                                             contentScale = ContentScale.Fit
                                         )
                                     }
